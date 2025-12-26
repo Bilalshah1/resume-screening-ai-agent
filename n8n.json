@@ -1,0 +1,844 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "ea5db6a3-93f5-4e88-b4b2-3e3c7f52c16c",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        352,
+        0
+      ],
+      "notes": "Runs every 6 hours - adjust as needed"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1NXPQKSdDF71t-egoYPWN-PCbPlMbkfK0",
+          "mode": "list",
+          "cachedResultName": "Job_desc.txt",
+          "cachedResultUrl": "https://drive.google.com/file/d/1NXPQKSdDF71t-egoYPWN-PCbPlMbkfK0/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "id": "c5e0d118-72d1-4565-b9ee-670bd248f488",
+      "name": "Download Job Description",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        544,
+        -112
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5m4qFGMZaIqajEEJ",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "Select your job_description.txt file"
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = $input.item.binary.data;\nconst textContent = Buffer.from(binaryData.data, 'base64').toString('utf8');\n\nreturn {\n  json: {\n    jobDescription: textContent\n  }\n};"
+      },
+      "id": "01ef48a9-9032-489d-8069-e22112371855",
+      "name": "Extract Job Description Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1t1aDqrsWLMzfhXQ-GJfXAdwpJmz0kvzR",
+            "mode": "list",
+            "cachedResultName": "resumes",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1t1aDqrsWLMzfhXQ-GJfXAdwpJmz0kvzR"
+          }
+        },
+        "options": {}
+      },
+      "id": "4e02a573-ca35-4506-ad18-c3e65bf03108",
+      "name": "List Folder Contents",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        544,
+        96
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5m4qFGMZaIqajEEJ",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "Select your Resumes folder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "44c12443-9f9f-49fc-9e63-0a22c6097eb9",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3f2e9918-e922-414b-8e9a-abd2fa8ac152",
+      "name": "Filter PDF/DOCX Files",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        752,
+        96
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "id": "2542d995-4417-4e41-b2e4-de7d87449e3f",
+      "name": "Merge Job Desc with Files",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "=14aymT68NXXo_n8tq5q_QDnsIdGWWUFfJ",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "5ac93ff6-f9b7-4273-9eea-893d1723d48e",
+      "name": "Download Resume File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1152,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5m4qFGMZaIqajEEJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "6b69126b-dd08-4866-8762-c37245260560",
+      "name": "Extract Resume Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyAfKakXTmJ0hOpNTr9tommUu766S3QtF1E"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are an expert HR recruiter. Analyze this resume and extract key information.\\n\\nRESUME TEXT:\\n\" + $json.text + \"\\n\\nExtract and return ONLY a valid JSON object with no markdown formatting:\\n{\\n  \\\"candidateName\\\": \\\"Full name\\\",\\n  \\\"email\\\": \\\"Email address\\\",\\n  \\\"phone\\\": \\\"Phone number\\\",\\n  \\\"yearsOfExperience\\\": number,\\n  \\\"education\\\": [\\\"Degree 1\\\", \\\"Degree 2\\\"],\\n  \\\"skills\\\": [\\\"Skill 1\\\", \\\"Skill 2\\\"],\\n  \\\"previousCompanies\\\": [\\\"Company 1\\\", \\\"Company 2\\\"],\\n  \\\"keyAchievements\\\": [\\\"Achievement 1\\\", \\\"Achievement 2\\\"],\\n  \\\"relevantExperience\\\": \\\"Brief summary\\\",\\n  \\\"summary\\\": \\\"Professional summary\\\"\\n}\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.3,\n    \"topK\": 1,\n    \"topP\": 1,\n    \"maxOutputTokens\": 4096\n  }\n} }}",
+        "options": {}
+      },
+      "id": "8a268e30-f5e3-41bf-95f3-02fa10f4e59b",
+      "name": "Gemini - Extract Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resume Parser - Handles Gemini responses with MAX_TOKENS issue\n// Processes ALL items in the array\n\nconst items = $input.all();\nconst results = [];\n\n// Get metadata from previous nodes (adjust node names to match yours)\nlet fileName = 'unknown.pdf';\nlet fileId = 'unknown-id';\nlet jobDescription = '';\n\ntry {\n  fileName = $('Download Resume File').item.json.name || 'unknown.pdf';\n  fileId = $('Download Resume File').item.json.id || 'unknown-id';\n  jobDescription = $('Extract Job Description Text').first().json.jobDescription || '';\n} catch (e) {\n  console.log('Could not get metadata:', e.message);\n}\n\n// Process each item (Gemini returns array of candidates)\nfor (const item of items) {\n  try {\n    const response = item.json;\n    \n    // Extract text from Gemini response\n    let extractedText = '';\n    if (response.candidates?.[0]?.content?.parts?.[0]?.text) {\n      extractedText = response.candidates[0].content.parts[0].text;\n    } else {\n      throw new Error('No text found in response');\n    }\n    \n    console.log('Processing item. Text length:', extractedText.length);\n    console.log('Finish reason:', response.candidates[0].finishReason);\n    \n    // Check if truncated\n    if (response.candidates[0].finishReason === 'MAX_TOKENS') {\n      console.warn('⚠️ Response was truncated! Increase Max Output Tokens in Gemini node');\n    }\n    \n    // Clean the text\n    let cleanText = extractedText\n      .replace(/```json\\n?/gi, '')\n      .replace(/```\\n?/g, '')\n      .trim();\n    \n    // Extract JSON (find first { to last })\n    const firstBrace = cleanText.indexOf('{');\n    const lastBrace = cleanText.lastIndexOf('}');\n    \n    if (firstBrace !== -1 && lastBrace !== -1) {\n      cleanText = cleanText.substring(firstBrace, lastBrace + 1);\n    }\n    \n    // Fix incomplete JSON\n    const openBraces = (cleanText.match(/{/g) || []).length;\n    const closeBraces = (cleanText.match(/}/g) || []).length;\n    \n    if (openBraces > closeBraces) {\n      console.log('Fixing incomplete JSON...');\n      \n      // Close incomplete arrays\n      const openBrackets = (cleanText.match(/\\[/g) || []).length;\n      const closeBrackets = (cleanText.match(/\\]/g) || []).length;\n      if (openBrackets > closeBrackets) {\n        cleanText += ']'.repeat(openBrackets - closeBrackets);\n      }\n      \n      // Close incomplete strings\n      const quotes = (cleanText.match(/\"/g) || []).length;\n      if (quotes % 2 !== 0) {\n        cleanText += '\"';\n      }\n      \n      // Close incomplete objects\n      cleanText += '}'.repeat(openBraces - closeBraces);\n    }\n    \n    // Parse JSON\n    let parsedData;\n    try {\n      parsedData = JSON.parse(cleanText);\n    } catch (parseError) {\n      console.error('JSON parse failed:', parseError.message);\n      \n      // Fallback: extract with regex\n      parsedData = extractWithRegex(cleanText);\n    }\n    \n    // Create result object\n    const result = {\n      candidateName: parsedData.candidateName || 'Unknown',\n      email: parsedData.email || 'unknown@email.com',\n      phone: parsedData.phone || 'N/A',\n      yearsOfExperience: parsedData.yearsOfExperience || 0,\n      education: parsedData.education || [],\n      skills: parsedData.skills || [],\n      previousCompanies: parsedData.previousCompanies || [],\n      keyAchievements: parsedData.keyAchievements || [],\n      relevantExperience: parsedData.relevantExperience || '',\n      \n      // Metadata\n      fileName: fileName,\n      fileId: fileId,\n      jobDescription: jobDescription,\n      parseStatus: 'success',\n      wasTruncated: response.candidates[0].finishReason === 'MAX_TOKENS',\n      parsedAt: new Date().toISOString()\n    };\n    \n    results.push({ json: result });\n    console.log('✅ Successfully parsed candidate:', result.candidateName);\n    \n  } catch (error) {\n    console.error('Error processing item:', error.message);\n    \n    // Add error item\n    results.push({\n      json: {\n        parseStatus: 'failed',\n        error: error.message,\n        candidateName: 'Unknown',\n        email: 'unknown@email.com',\n        fileName: fileName,\n        fileId: fileId,\n        parsedAt: new Date().toISOString()\n      }\n    });\n  }\n}\n\n// Helper function for regex extraction\nfunction extractWithRegex(text) {\n  const data = {};\n  \n  // Extract name\n  const nameMatch = text.match(/\"candidateName\"\\s*:\\s*\"([^\"]+)\"/);\n  if (nameMatch) data.candidateName = nameMatch[1];\n  \n  // Extract email\n  const emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z0-9_-]+)/);\n  if (emailMatch) data.email = emailMatch[1];\n  \n  // Extract phone\n  const phoneMatch = text.match(/[+]?[\\d\\s()-]{10,}/);\n  if (phoneMatch) data.phone = phoneMatch[0].trim();\n  \n  // Extract years\n  const yearsMatch = text.match(/\"yearsOfExperience\"\\s*:\\s*(\\d+)/);\n  if (yearsMatch) data.yearsOfExperience = parseInt(yearsMatch[1]);\n  \n  return data;\n}\n\nconsole.log('Processed', results.length, 'items');\nreturn results;"
+      },
+      "id": "032d85a2-0191-4a01-9eb6-bc0509558d9a",
+      "name": "Parse Extracted Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyDuA4doSQoszT2MxJQJC0-wMQEvTYeZS2I"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"You are an expert HR recruiter. Score this candidate against the job requirements.\\n\\nCANDIDATE INFO:\\n\" + JSON.stringify($json) + \"\\n\\nJOB DESCRIPTION:\\n\" + $json.jobDescription + \"\\n\\nProvide ONLY a valid JSON object with no markdown formatting:\\n{\\n  \\\"overallScore\\\": number (0-100),\\n  \\\"scores\\\": {\\n    \\\"skillsMatch\\\": number (0-100),\\n    \\\"experienceMatch\\\": number (0-100),\\n    \\\"educationMatch\\\": number (0-100),\\n    \\\"cultureFit\\\": number (0-100)\\n  },\\n  \\\"strengths\\\": [\\\"Strength 1\\\", \\\"Strength 2\\\", \\\"Strength 3\\\"],\\n  \\\"concerns\\\": [\\\"Concern 1\\\", \\\"Concern 2\\\"],\\n  \\\"recommendation\\\": \\\"STRONG_YES or YES or MAYBE or NO\\\",\\n  \\\"reasoning\\\": \\\"Detailed explanation of the score\\\",\\n  \\\"interviewQuestions\\\": [\\\"Question 1\\\", \\\"Question 2\\\", \\\"Question 3\\\"]\\n}\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.3,\n    \"topK\": 1,\n    \"topP\": 1,\n    \"maxOutputTokens\": 2048\n  }\n} }}",
+        "options": {}
+      },
+      "id": "fb39bcc9-bcbc-4d6d-a69d-61d4767102b3",
+      "name": "Gemini - Score Candidate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1952,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst candidateInfo = $('Parse Extracted Info').first().json;\n\nconst results = [];\n\nfor (const item of items) {\n  const response = item.json;\n  let extractedText = '';\n\n  try {\n    extractedText = response.candidates?.[0]?.content?.parts?.[0]?.text || '';\n\n    // Remove code fences\n    let clean = extractedText.replace(/```json\\n?|```\\n?/gi, '').trim();\n\n    // Try to detect JSON region\n    const first = clean.indexOf('{');\n    const last = clean.lastIndexOf('}');\n    if (first !== -1 && last !== -1) {\n      clean = clean.substring(first, last + 1);\n    }\n\n    // If truncated → try to repair minimal JSON\n    if (response.candidates[0].finishReason === 'MAX_TOKENS') {\n      const open = (clean.match(/{/g) || []).length;\n      const close = (clean.match(/}/g) || []).length;\n      if (open > close) clean += '}'.repeat(open - close);\n      \n      const quotes = (clean.match(/\"/g) || []).length;\n      if (quotes % 2 !== 0) clean += '\"';\n    }\n\n    let scoring;\n    try {\n      scoring = JSON.parse(clean);\n    } catch {\n      scoring = {\n        overallScore: 0,\n        note: \"JSON incomplete due to MAX_TOKENS\"\n      };\n    }\n\n    results.push({\n      json: {\n        candidateInfo,\n        scoring,\n        truncated: response.candidates[0].finishReason === 'MAX_TOKENS',\n        modelVersion: response.modelVersion,\n        timestamp: new Date().toISOString()\n      }\n    });\n\n  } catch (e) {\n    results.push({\n      json: {\n        candidateInfo,\n        error: e.message,\n        scoring: { overallScore: 0, recommendation: \"ERROR\" },\n        timestamp: new Date().toISOString()\n      }\n    });\n  }\n}\n\nreturn results;\n"
+      },
+      "id": "9a427280-2049-444f-9089-884bd171b803",
+      "name": "Parse & Merge Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.scoring.overallScore}}",
+              "operation": "largerEqual",
+              "value2": 70
+            }
+          ]
+        }
+      },
+      "id": "ecdb36e0-b6e1-4650-a390-256ffcf620f1",
+      "name": "Check Score (≥70 = Shortlisted)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Z3TBslcksBjFSxGFyfS_UnBfLqeGvKqkG3wYFo9qEPM",
+          "mode": "list",
+          "cachedResultName": "Shortlisted_candidates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z3TBslcksBjFSxGFyfS_UnBfLqeGvKqkG3wYFo9qEPM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z3TBslcksBjFSxGFyfS_UnBfLqeGvKqkG3wYFo9qEPM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "candidateName": "={{ $json.candidateInfo.candidateName }}",
+            "email": "={{ $json.candidateInfo.email }}",
+            "phone": "={{ $json.candidateInfo.phone }}",
+            "overallScore": "={{ $json.scoring.overallScore }}",
+            "skillsMatch": "={{ $json.scoring.scores.skillsMatch }}",
+            "experienceMatch": "={{ $json.scoring.scores.experienceMatch }}",
+            "cultureFit": "={{ $json.scoring.scores.cultureFit }}",
+            "educationMatch": "={{ $json.scoring.scores.educationMatch }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "candidateName",
+              "displayName": "candidateName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overallScore",
+              "displayName": "overallScore",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "skillsMatch",
+              "displayName": "skillsMatch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "experienceMatch",
+              "displayName": "experienceMatch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "educationMatch",
+              "displayName": "educationMatch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cultureFit",
+              "displayName": "cultureFit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "shortlistedAt",
+              "displayName": "shortlistedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cd6aa7f6-7f64-4716-b212-5cb091c78b90",
+      "name": "Save Shortlisted to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        2544,
+        -112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VxBmvyIiMLeT1jiF",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Select your Google Sheet"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LTKWty00yGYw3KIPaTyJ7cCvhKwEPX9H-7-iCiMbhK4",
+          "mode": "list",
+          "cachedResultName": "Rejected_candidates",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LTKWty00yGYw3KIPaTyJ7cCvhKwEPX9H-7-iCiMbhK4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Parse & Merge Results').item.json.candidateInfo.candidateName }}",
+            "Candidate Name": "={{ $('Parse & Merge Results').item.json.candidateInfo.email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Candidate Name",
+              "displayName": "Candidate Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappings": [
+            {
+              "id": "col1",
+              "name": "Timestamp",
+              "value": "={{$json.timestamp}}"
+            },
+            {
+              "id": "col2",
+              "name": "Candidate Name",
+              "value": "={{$json.candidateInfo.candidateName}}"
+            },
+            {
+              "id": "col3",
+              "name": "Email",
+              "value": "={{$json.candidateInfo.email}}"
+            },
+            {
+              "id": "col4",
+              "name": "Phone",
+              "value": "={{$json.candidateInfo.phone}}"
+            },
+            {
+              "id": "col5",
+              "name": "Overall Score",
+              "value": "={{$json.scoring.overallScore}}"
+            },
+            {
+              "id": "col6",
+              "name": "Skills Match",
+              "value": "={{$json.scoring.scores.skillsMatch}}"
+            },
+            {
+              "id": "col7",
+              "name": "Experience Match",
+              "value": "={{$json.scoring.scores.experienceMatch}}"
+            },
+            {
+              "id": "col8",
+              "name": "Recommendation",
+              "value": "={{$json.scoring.recommendation}}"
+            },
+            {
+              "id": "col9",
+              "name": "Status",
+              "value": "Not Qualified"
+            },
+            {
+              "id": "col10",
+              "name": "File Name",
+              "value": "={{$json.candidateInfo.fileName}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1ba8e8e-e9e6-4138-88c1-e0c56a0e5eae",
+      "name": "Save Rejected to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        2544,
+        96
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VxBmvyIiMLeT1jiF",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Select your Google Sheet"
+    },
+    {
+      "parameters": {
+        "fromEmail": "bs7322186@gmail.com",
+        "toEmail": "={{ $('Check Score (≥70 = Shortlisted)').item.json.candidateInfo.email }}",
+        "subject": "🎉 Congratulations! You've Been Shortlisted",
+        "emailFormat": "text",
+        "text": "Thank you for your interest in our team. We were impressed with your background and would like to invite you for an interview to discuss the role further. Please let us know your availability over the next few days.",
+        "options": {}
+      },
+      "id": "ec806505-3926-46d2-b03d-aa5183f925e3",
+      "name": "Send Shortlist Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2752,
+        -112
+      ],
+      "webhookId": "41f97e10-7b45-45b9-af34-3d25f235d9f0",
+      "credentials": {
+        "smtp": {
+          "id": "Kvke7zlrJFngbx3S",
+          "name": "SMTP account"
+        }
+      },
+      "notes": "Configure your SMTP/Gmail credentials"
+    },
+    {
+      "parameters": {
+        "fromEmail": "bs7322186@gmail.com",
+        "toEmail": "={{$json.candidateInfo.email}}",
+        "subject": "Thank you for your application",
+        "emailFormat": "text",
+        "text": "Thank you for your interest and for taking the time to connect. After careful consideration, we’ve decided not to move forward at this time. We appreciate your effort and wish you the best of luck.",
+        "options": {}
+      },
+      "id": "ecc27d0b-c3ca-47e1-a3d3-f2bbf267c5ae",
+      "name": "Send Rejection Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2752,
+        96
+      ],
+      "webhookId": "b9831254-9ec6-4cae-9e55-938054eb4369",
+      "credentials": {
+        "smtp": {
+          "id": "Kvke7zlrJFngbx3S",
+          "name": "SMTP account"
+        }
+      },
+      "notes": "Configure your SMTP/Gmail credentials"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download Job Description",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "List Folder Contents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Job Description": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Description Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job Description Text": {
+      "main": [
+        [
+          {
+            "node": "Merge Job Desc with Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Folder Contents": {
+      "main": [
+        [
+          {
+            "node": "Filter PDF/DOCX Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter PDF/DOCX Files": {
+      "main": [
+        [
+          {
+            "node": "Merge Job Desc with Files",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Job Desc with Files": {
+      "main": [
+        [
+          {
+            "node": "Download Resume File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Resume File": {
+      "main": [
+        [
+          {
+            "node": "Extract Resume Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Resume Text": {
+      "main": [
+        [
+          {
+            "node": "Gemini - Extract Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini - Extract Info": {
+      "main": [
+        [
+          {
+            "node": "Parse Extracted Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Extracted Info": {
+      "main": [
+        [
+          {
+            "node": "Gemini - Score Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini - Score Candidate": {
+      "main": [
+        [
+          {
+            "node": "Parse & Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Check Score (≥70 = Shortlisted)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Score (≥70 = Shortlisted)": {
+      "main": [
+        [
+          {
+            "node": "Save Shortlisted to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Rejected to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Shortlisted to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Shortlist Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Rejected to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Rejection Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Shortlist Email": {
+      "main": [
+        []
+      ]
+    },
+    "Send Rejection Email": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {
+    "Gemini - Score Candidate": [
+      {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "```json\n{\n  \"overallScore\": 92,\n  \"scores\": {\n    \"skillsMatch\": 98,\n    \"experienceMatch\": 90,\n    \"educationMatch\": 80,\n    \"cultureFit\": 95\n  },\n  \"strengths\": [\n    \"Exceptional hands-on experience with Node."
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "MAX_TOKENS",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1060,
+          "candidatesTokenCount": 81,
+          "totalTokenCount": 3104,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 1060
+            }
+          ],
+          "thoughtsTokenCount": 1963
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "GnVNaaS7J7KakdUPq7PDsQw"
+      },
+      {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "```json\n{\n  \"overallScore\": 92,\n  \"scores\": {\n    \"skillsMatch\": 95,\n    \"experienceMatch\": 90,\n    \"educationMatch\": 80,\n    \"cultureFit\": 90\n  },\n  \"strengths\": [\n    \"Exceptional hands-on experience with Node"
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "MAX_TOKENS",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 1054,
+          "candidatesTokenCount": 80,
+          "totalTokenCount": 3098,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 1054
+            }
+          ],
+          "thoughtsTokenCount": 1964
+        },
+        "modelVersion": "gemini-2.5-flash",
+        "responseId": "GHVNaaeGHuKckdUPhdO8gAw"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4facb4de03181c1a0247738710957791bdf6e391c51286c858ba5cd9b62137aa"
+  }
+}
