@@ -1,4 +1,4 @@
-# Resume Parser & Candidate Management System - n8n Workflow
+# Resume Screening ai agent - n8n Workflow
 
 ## Overview
 
